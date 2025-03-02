@@ -37,10 +37,11 @@ end
 -- Function to invoke the sell remote function
 local function invokeSellRemote()
     local skins = {
-        "Checkered", "Grey Camo", "Green Camo", "Orange Crush", 
-		"Painted Yellow", "Painted Orange", "Damaged", "Earth", 
-		"Painted Blue", "Painted Green", "Painted Red", 
-		"Painted Pink", "Painted Purple"
+        "Hot Pink", "Agent", "Checkered", "Grey Camo", "Rusted Red",
+        "Green Camo", "Orange Crush", "Painted Yellow", "Painted Orange",
+        "Damaged", "Earth", "Painted Blue", "Painted Green", "Painted Red", 
+        "Painted Pink", "Painted Purple", "Green Sentry", "Pink Sentry", 
+        "Red Sentry", "Royal", "Fallen Agent"
     }
     local guns = {"SMG", "LMG", "Double Barrel Shotgun", "Revolver", "AK47", "Turret", "Shotgun"}
 
