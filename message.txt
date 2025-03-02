@@ -1,0 +1,131 @@
+-- Create the buttons
+local ScreenGui = Instance.new("ScreenGui")
+local ButtonRollSell = Instance.new("TextButton")
+local ButtonSell = Instance.new("TextButton")
+
+ScreenGui.Parent = game.CoreGui
+
+-- Setup "Roll and Sell" button
+ButtonRollSell.Parent = ScreenGui
+ButtonRollSell.Size = UDim2.new(0, 100, 0, 50)
+ButtonRollSell.Position = UDim2.new(0, 0, 0, 0)
+ButtonRollSell.Text = "Roll and Sell"
+
+-- Setup "Sell" button
+ButtonSell.Parent = ScreenGui
+ButtonSell.Size = UDim2.new(0, 100, 0, 50)
+ButtonSell.Position = UDim2.new(0, 110, 0, 0) -- Adjusted position
+ButtonSell.Text = "Sell"
+
+-- Variables to control the loop
+local rollSellRunning = false
+local sellRunning = false
+local rollConnection
+local sellConnection
+local rollSellConnection
+local initialWait = true
+local buttonPressed = false
+
+-- Function to invoke the roll remote function
+local function invokeRollRemote()
+    local remoteFunctionArgs = {
+        [1] = "PremRollSkin10"
+    }
+    game:GetService("ReplicatedStorage").RemoteFunction:InvokeServer(unpack(remoteFunctionArgs))
+end
+
+-- Function to invoke the sell remote function
+local function invokeSellRemote()
+    local skins = {
+        "Checkered", "Grey Camo", "Green Camo", "Orange Crush", 
+		"Painted Yellow", "Painted Orange", "Damaged", "Earth", 
+		"Painted Blue", "Painted Green", "Painted Red", 
+		"Painted Pink", "Painted Purple"
+    }
+    local guns = {"SMG", "LMG", "Double Barrel Shotgun", "Revolver", "AK47", "Turret", "Shotgun"}
+
+    for _, gun in ipairs(guns) do
+        for _, skin in ipairs(skins) do
+            -- Invoke sell remote function twice for painted skins
+            local eventArgs = {
+                [1] = "SellSkin",
+                [2] = gun,
+                [3] = skin
+            }
+            game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvent"):FireServer(unpack(eventArgs))
+            game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvent"):FireServer(unpack(eventArgs))
+        end
+    end
+end
+
+-- Wait for 5 seconds to check for button press
+local function initialWaitFunction()
+    wait(5)
+    initialWait = false
+end
+
+-- Start the initial wait
+spawn(initialWaitFunction)
+
+-- Automatically start the "Roll and Sell" loops after initial wait and sell period
+local function startRollAndSellLoops()
+    rollConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        invokeRollRemote()
+        wait(0.3) -- Roll every 0.3 seconds
+    end)
+    sellConnection = game:GetService("RunService").Heartbeat:Connect(function()
+        invokeSellRemote()
+        wait(0.5) -- Adjusted to 0.5 seconds to reduce lag
+    end)
+end
+
+spawn(function()
+    wait(5)
+    if not buttonPressed then
+        local startTime = tick()
+        while tick() - startTime < 10 do
+            invokeSellRemote()
+            wait(0.5) -- Adjusted to 0.2 seconds to reduce lag
+        end
+        startRollAndSellLoops()
+    end
+end)
+
+-- Toggle the "Roll and Sell" loops when the button is clicked
+ButtonRollSell.MouseButton1Click:Connect(function()
+    buttonPressed = true
+    rollSellRunning = not rollSellRunning
+    if rollSellRunning then
+        -- Start the loops
+        startRollAndSellLoops()
+    else
+        -- Stop the loops
+        if rollConnection then
+            rollConnection:Disconnect()
+            rollConnection = nil
+        end
+        if sellConnection then
+            sellConnection:Disconnect()
+            sellConnection = nil
+        end
+    end
+end)
+
+-- Toggle the "Sell" loop when the button is clicked
+ButtonSell.MouseButton1Click:Connect(function()
+    buttonPressed = true
+    sellRunning = not sellRunning
+    if sellRunning then
+        -- Start the loop
+        sellConnection = game:GetService("RunService").Heartbeat:Connect(function()
+            invokeSellRemote()
+            wait(0.5) -- Adjusted to 0.5 seconds to reduce lag
+        end)
+    else
+        -- Stop the loop
+        if sellConnection then
+            sellConnection:Disconnect()
+            sellConnection = nil
+        end
+    end
+end)
